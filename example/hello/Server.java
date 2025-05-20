@@ -41,28 +41,58 @@ import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Server implements Hello {
 
+    // Lista sincronizada para segurança em acesso concorrente
+    private final List<String> elements = Collections.synchronizedList(new ArrayList<>());
+
     public Server() {}
 
-    public String sayHello() {
-        return "Hello, world!";
+    @Override
+    public String addElement(String element) throws RemoteException {
+        elements.add(element);
+        return "Elemento '" + element + "' adicionado.";
+    }
+
+    @Override
+    public String removeElement(String element) throws RemoteException {
+        if (elements.remove(element)) {
+            return "Elemento '" + element + "' removido.";
+        }
+        return "Elemento '" + element + "' não encontrado.";
+    }
+
+    @Override
+    public boolean containsElement(String element) throws RemoteException {
+        return elements.contains(element);
+    }
+
+    @Override
+    public int getSize() throws RemoteException {
+        return elements.size();
+    }
+
+    @Override
+    public List<String> getAllElements() throws RemoteException {
+        return new ArrayList<>(elements); // retorna uma cópia para evitar modificações externas
     }
 
     public static void main(String args[]) {
-
         try {
             Server obj = new Server();
             Hello stub = (Hello) UnicastRemoteObject.exportObject(obj, 0);
 
-            // Bind the remote object's stub in the registry
             Registry registry = LocateRegistry.getRegistry();
+
             registry.bind("Hello", stub);
 
-            System.err.println("Server ready");
+            System.err.println("Servidor pronto!");
         } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
+            System.err.println("Exceção no servidor: " + e.toString());
             e.printStackTrace();
         }
     }

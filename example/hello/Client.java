@@ -35,29 +35,82 @@
  * intended for use in the design, construction, operation or
  * maintenance of any nuclear facility.
  */
-package example.hello;
+
+ package example.hello;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.List;
+import java.util.Scanner;
 
 public class Client {
 
     private Client() {}
 
     public static void main(String[] args) {
+        System.out.println("Iniciando cliente...");
 
-        System.out.println("Initiating client");
-        
-        String host = (args.length < 1) ? null : args[0];
+        String host = (args.length < 1) ? null : args[0]; // Se nenhum IP for passado, assume localhost
         try {
             Registry registry = LocateRegistry.getRegistry(host);
-            System.out.println("Registry has been located");
+            System.out.println("Registro localizado.");
+
             Hello stub = (Hello) registry.lookup("Hello");
-            System.out.println("Found server");
-            String response = stub.sayHello();
-            System.out.println("response: " + response);
+            System.out.println("Servidor encontrado.\n");
+
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                System.out.println("==== MENU ====");
+                System.out.println("1 - Adicionar elemento");
+                System.out.println("2 - Remover elemento");
+                System.out.println("3 - Verificar se elemento está na lista");
+                System.out.println("4 - Ver tamanho da lista");
+                System.out.println("5 - Listar todos os elementos");
+                System.out.println("0 - Sair");
+                System.out.print("Escolha uma opção: ");
+
+                int option = scanner.nextInt();
+                scanner.nextLine(); // Limpa o buffer
+
+                switch (option) {
+                    case 1:
+                        System.out.print("Digite o elemento para adicionar: ");
+                        String toAdd = scanner.nextLine();
+                        System.out.println(stub.addElement(toAdd));
+                        break;
+                    case 2:
+                        System.out.print("Digite o elemento para remover: ");
+                        String toRemove = scanner.nextLine();
+                        System.out.println(stub.removeElement(toRemove));
+                        break;
+                    case 3:
+                        System.out.print("Digite o elemento para verificar: ");
+                        String toCheck = scanner.nextLine();
+                        boolean exists = stub.containsElement(toCheck);
+                        System.out.println("Está na lista? " + (exists ? "Sim" : "Não"));
+                        break;
+                    case 4:
+                        System.out.println("Tamanho da lista: " + stub.getSize());
+                        break;
+                    case 5:
+                        List<String> elements = stub.getAllElements();
+                        System.out.println("Elementos na lista:");
+                        for (String el : elements) {
+                            System.out.println("- " + el);
+                        }
+                        break;
+                    case 0:
+                        System.out.println("Encerrando cliente.");
+                        return;
+                    default:
+                        System.out.println("Opção inválida.");
+                }
+
+                System.out.println(); // Linha em branco para separar ciclos
+            }
+
         } catch (Exception e) {
-            System.err.println("Client exception: " + e.toString());
+            System.err.println("Exceção no cliente: " + e.toString());
             e.printStackTrace();
         }
     }

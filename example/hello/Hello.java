@@ -39,7 +39,15 @@ package example.hello;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface Hello extends Remote {
-    String sayHello() throws RemoteException;
+    // Operações básicas
+    String addElement(String element) throws RemoteException;
+    String removeElement(String element) throws RemoteException;
+    boolean containsElement(String element) throws RemoteException;
+
+    // Estatísticas
+    int getSize() throws RemoteException;
+    List<String> getAllElements() throws RemoteException;
 }
